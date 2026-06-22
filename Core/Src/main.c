@@ -327,25 +327,23 @@ void TaskBFunc(void const * argument)
   for(int i = 200; i < 400; i++){
     local_sumB += data_array[i];
   }
-
-  while(taskA_ready == 0){
-    osDelay(10);
-  }
-
-  if(osMutexWait(myMutex01Handle, osWaitForever) == osOK){
-    total_sum += local_sumB;
-    osMutexRelease(myMutex01Handle);
-    osThreadYield();
-    printf("Total sum: %d\n", total_sum);
-    HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
-  }
-
   
   /* Infinite loop */
   for(;;)
   {
-
+    if(osMutexWait(myMutex01Handle, osWaitForever) == osOK){
+      if(taskA_ready == 1){
+        total_sum += local_sumB;
+        osMutexRelease(myMutex01Handle);
+        break;
+      }
+    osMutexRelease(myMutex01Handle);
+    }
+    osDelay(10);
   }
+
+  printf("Total sum: %d\n", total_sum);
+  HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
   /* USER CODE END TaskBFunc */
 }
 
